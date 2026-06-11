@@ -509,7 +509,7 @@
                 if (player.health <= 0) {
                     gameState = STATES.GAMEOVER;
                     document.getElementById('final-score').innerText = `Score: ${score}`;
-                    document.getElementById('final-cash').innerText = `Earnings: £${cash}`;
+                    document.getElementById('final-cash').innerText = `Earnings: Coins ${cash}`;
                     document.getElementById('gameover-screen').classList.remove('hidden');
                 }
                 continue;
@@ -609,7 +609,7 @@
             
             ctx.fillStyle = '#ffd700';
             ctx.font = 'bold 16px sans-serif';
-            ctx.fillText(`£${cash}`, GAME_WIDTH - 85, 31);
+            ctx.fillText(`Coins ${cash}`, GAME_WIDTH - 85, 31);
 
             ctx.fillStyle = '#ccc';
             ctx.font = '11px sans-serif';
