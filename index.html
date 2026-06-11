@@ -2,52 +2,42 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Racing Attack</title>
     <style>
-        :root {
-            --bg-color: #1a1a1a;
-            --primary-color: #ff3e3e;
-            --secondary-color: #ffd700;
-            --ui-bg: rgba(0, 0, 0, 0.7);
-        }
-
         * {
             box-sizing: border-box;
-            user-select: none;
-            -webkit-user-select: none;
             margin: 0;
             padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
         }
-
-        body, html {
+        body {
+            background-color: #111;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            position: fixed;
             width: 100%;
             height: 100%;
-            overflow: hidden;
-            background-color: var(--bg-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            touch-action: none;
         }
-
-        #game-container {
+        #gameContainer {
             position: relative;
             width: 100%;
             height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        canvas {
-            background: #2b2b2b;
+            max-width: 500px;
+            margin: 0 auto;
+            background: #222;
             box-shadow: 0 0 20px rgba(0,0,0,0.8);
-            max-width: 100%;
-            max-height: 100%;
-            aspect-ratio: 9 / 16;
         }
-
-        /* UI Screens */
-        .screen {
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: #333;
+        }
+        /* UI Overlays */
+        .overlay {
             position: absolute;
             top: 0;
             left: 0;
@@ -57,363 +47,262 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            background: rgba(0, 0, 0, 0.85);
             z-index: 10;
-            color: #fff;
-            text-align: center;
-            background: rgba(15, 15, 15, 0.9);
-            backdrop-filter: blur(4px);
+            transition: opacity 0.3s ease;
         }
-
-        .hidden {
+        .hide {
             display: none !important;
         }
-
         h1 {
             font-size: 3rem;
-            color: var(--primary-color);
+            color: #ff3333;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255,51,51,0.5);
             margin-bottom: 10px;
+            letter-spacing: 2px;
         }
-
         p {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             margin-bottom: 30px;
-            color: #ccc;
+            color: #aaa;
+            text-align: center;
+            padding: 0 20px;
         }
-
         .btn {
             padding: 15px 40px;
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: #000;
-            background: var(--secondary-color);
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #ff3333 0%, #990000 100%);
+            color: white;
             border: none;
-            border-radius: 30px;
+            border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+            font-weight: bold;
             text-transform: uppercase;
+            box-shadow: 0 5px 15px rgba(255,51,51,0.4);
+            transition: transform 0.1s, box-shadow 0.1s;
         }
-
-        /* Fixed Mobile Touch Overlay Controls */
-        #touch-controls {
+        .btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 5px rgba(255,51,51,0.4);
+        }
+        /* Mobile Touch Controls */
+        #touchControls {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
             height: 25%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 25px 25px 25px;
-            pointer-events: none;
             z-index: 5;
+            display: none;
+            grid-template-columns: 1fr 1fr;
         }
-
-        .control-group {
-            display: flex;
-            gap: 20px;
-            pointer-events: auto;
+        .steer-zone {
+            height: 100%;
+            opacity: 0.1;
         }
-
-        .ctrl-btn {
-            width: 80px;
-            height: 80px;
+        #fireBtn {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 51, 51, 0.7);
+            border: 3px solid #fff;
             border-radius: 50%;
-            background: var(--ui-bg);
-            border: 3px solid rgba(255, 255, 255, 0.4);
-            color: white;
-            font-size: 2rem;
-            font-weight: bold;
-            display: flex;
+            z-index: 6;
+            display: none;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.6);
-            cursor: pointer;
-            /* Critical for mobile touch responsiveness */
-            touch-action: none; 
-            -webkit- Pilgrim-tap-highlight-color: transparent;
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-shadow: 0 1px 2px #000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
-
-        #btn-shoot {
-            width: 90px;
-            height: 90px;
-            background: rgba(255, 62, 62, 0.4);
-            border-color: rgba(255, 62, 62, 0.8);
+        #fireBtn:active {
+            background: rgba(255, 51, 51, 0.9);
+            transform: scale(0.9);
+        }
+        /* Show mobile controls only on touch devices */
+        @media (pointer: coarse) {
+            #touchControls, #fireBtn {
+                display: grid;
+            }
+            #fireBtn { display: flex; }
         }
     </style>
 </head>
 <body>
 
-<div id="game-container">
+<div id="gameContainer">
+    <div id="startScreen" class="overlay">
+        <h1>Racing Attack</h1>
+        <p>Destroy enemy cars and survive the highway. Don't crash!</p>
+        <button class="btn" onclick="startGame()">Race</button>
+    </div>
+
+    <div id="gameOverScreen" class="overlay hide">
+        <h1 style="color: #ff3333;">Wrecked!</h1>
+        <p id="finalScore">Score: 0</p>
+        <button class="btn" onclick="startGame()">Retry</button>
+    </div>
+
     <canvas id="gameCanvas"></canvas>
 
-    <div id="start-screen" class="screen">
-        <h1>Racing Attack</h1>
-        <p>Destroy enemies. Collect cash. Survive.</p>
-        <button class="btn" id="start-btn">Race</button>
+    <div id="touchControls">
+        <div id="leftZone" class="steer-zone"></div>
+        <div id="rightZone" class="steer-zone"></div>
     </div>
-
-    <div id="gameover-screen" class="screen hidden">
-        <h1>Wrecked</h1>
-        <p id="final-score">Score: 0</p>
-        <p id="final-cash">Earnings: £0</p>
-        <button class="btn" id="restart-btn">Drive Again</button>
-    </div>
-
-    <div id="touch-controls">
-        <div class="control-group">
-            <div class="ctrl-btn" id="btn-left">←</div>
-            <div class="ctrl-btn" id="btn-right">→</div>
-        </div>
-        <div class="control-group">
-            <div class="ctrl-btn" id="btn-shoot">🔥</div>
-        </div>
-    </div>
+    <div id="fireBtn">FIRE</div>
 </div>
 
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    const GAME_WIDTH = 360;
-    const GAME_HEIGHT = 640;
-    canvas.width = GAME_WIDTH;
-    canvas.height = GAME_HEIGHT;
+    // UI Elements
+    const startScreen = document.getElementById('startScreen');
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    const finalScoreText = document.getElementById('finalScore');
+    const fireBtn = document.getElementById('fireBtn');
 
-    const STATES = { START: 0, PLAYING: 1, GAMEOVER: 2 };
-    let gameState = STATES.START;
+    // Game Constants & State
+    let gameActive = false;
+    let score = 0;
+    let speedModifier = 1;
+    let trackOffset = 0;
 
-    let audioCtx = null;
-    function initAudio() {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-
-    function playSound(type) {
-        if (!audioCtx) return;
-        try {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            if (type === 'shoot') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.1);
-            } else if (type === 'explosion') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.3);
-                gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.3);
-            } else if (type === 'coin') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-                osc.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.08);
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.2);
-            }
-        } catch(e) {}
-    }
-
-    const keys = { Left: false, Right: false };
-    
-    // Desktop Keyboard Listeners
-    window.addEventListener('keydown', e => {
-        if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.Left = true;
-        if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.Right = true;
-        if (e.code === 'Space' && gameState === STATES.PLAYING) player.shoot();
-    });
-
-    window.addEventListener('keyup', e => {
-        if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.Left = false;
-        if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.Right = false;
-    });
-
-    // Bulletproof Universal Touch and Click Handlers
-    function setupButton(id, onPress, onRelease = null) {
-        const btn = document.getElementById(id);
-        
-        // Touch devices
-        btn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            onPress();
-        }, { passive: false });
-        
-        if (onRelease) {
-            btn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                onRelease();
-            }, { passive: false });
-        }
-
-        // Mouse Fallbacks for testing
-        btn.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            onPress();
-        });
-        if (onRelease) {
-            btn.addEventListener('mouseup', onRelease);
-            btn.addEventListener('mouseleave', onRelease);
-        }
-    }
-
-    setupButton('btn-left', () => keys.Left = true, () => keys.Left = false);
-    setupButton('btn-right', () => keys.Right = true, () => keys.Right = false);
-    setupButton('btn-shoot', () => { if (gameState === STATES.PLAYING) player.shoot(); });
-
+    // Entities
     let player;
     let enemies = [];
     let bullets = [];
-    let coins = [];
     let particles = [];
-    let roadY = 0;
-    let score = 0;
-    let cash = 0;
-    let speedMPH = 70;
-    let spawnTimer = 0;
-    let ambientCoinTimer = 0;
-    let gameTicks = 0;
-    let screenShake = 0;
 
+    // Controls State
+    const keys = { ArrowLeft: false, ArrowRight: false, KeyA: false, KeyD: false, Space: false };
+    let touchLeft = false;
+    let touchRight = false;
+    let lastShotTime = 0;
+    const shotCooldown = 250; // ms
+
+    // Handle Resize to ensure crisp scaling on mobile high-DPI screens
+    function resizeCanvas() {
+        const container = document.getElementById('gameContainer');
+        const rect = container.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Player Object Blueprint
     class Player {
         constructor() {
             this.width = 40;
             this.height = 70;
-            this.x = GAME_WIDTH / 2 - this.width / 2;
-            this.y = GAME_HEIGHT - 180;
+            this.x = canvas.width / 2 - this.width / 2;
+            this.y = canvas.height - this.height - 120; // Room for mobile buttons
             this.speed = 6;
-            this.health = 100;
-            this.shootCooldown = 0;
+            this.color = '#00ffcc';
         }
 
         update() {
-            if (keys.Left && this.x > 50) this.x -= this.speed;
-            if (keys.Right && this.x < GAME_WIDTH - 50 - this.width) this.x += this.speed;
-            if (this.shootCooldown > 0) this.shootCooldown--;
-        }
+            // Movement Logic
+            if (keys.ArrowLeft || keys.KeyA || touchLeft) {
+                this.x -= this.speed;
+            }
+            if (keys.ArrowRight || keys.KeyD || touchRight) {
+                this.x += this.speed;
+            }
 
-        shoot() {
-            if (this.shootCooldown === 0) {
-                bullets.push(new Bullet(this.x + this.width / 2 - 3, this.y));
-                this.shootCooldown = 10; 
-                playSound('shoot');
+            // Road Boundary Collisions (Keep within asphalt)
+            const roadLeftBound = canvas.width * 0.15;
+            const roadRightBound = canvas.width * 0.85 - this.width;
+            if (this.x < roadLeftBound) this.x = roadLeftBound;
+            if (this.x > roadRightBound) this.x = roadRightBound;
+
+            // Handle Continuous Keyboard Shooting
+            if (keys.Space) {
+                shootBullet();
             }
         }
 
         draw() {
+            // Draw sleek racing car chassis
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x, this.y + 10, this.width, this.height - 20);
+            // Cockpit
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(this.x + 10, this.y + 25, this.width - 20, 15);
             // Wheels
             ctx.fillStyle = '#111';
-            ctx.fillRect(this.x - 4, this.y + 10, 6, 14);
-            ctx.fillRect(this.x + this.width - 2, this.y + 10, 6, 14);
-            ctx.fillRect(this.x - 4, this.y + 48, 6, 14);
-            ctx.fillRect(this.x + this.width - 2, this.y + 48, 6, 14);
-
-            // Car Body
-            ctx.fillStyle = '#ff2222';
-            ctx.beginPath();
-            ctx.roundRect(this.x, this.y, this.width, this.height, 8);
-            ctx.fill();
-
-            // Stripes
-            ctx.fillStyle = '#fff';
-            ctx.fillRect(this.x + 12, this.y, 4, this.height);
-            ctx.fillRect(this.x + 24, this.y, 4, this.height);
-
-            // Windshield
-            ctx.fillStyle = '#55ccff';
-            ctx.beginPath();
-            ctx.roundRect(this.x + 8, this.y + 22, this.width - 16, 18, 4);
-            ctx.fill();
+            ctx.fillRect(this.x - 4, this.y + 12, 4, 14); // Front Left
+            ctx.fillRect(this.x + this.width, this.y + 12, 4, 14); // Front Right
+            ctx.fillRect(this.x - 4, this.y + 44, 4, 14); // Rear Left
+            ctx.fillRect(this.x + this.width, this.y + 44, 4, 14); // Rear Right
+            // Spoiler
+            ctx.fillStyle = '#ff3333';
+            ctx.fillRect(this.x - 2, this.y + this.height - 10, this.width + 4, 6);
         }
     }
 
+    // Enemy Car Blueprint
     class Enemy {
         constructor() {
-            this.width = 42;
-            this.height = 72;
-            this.x = Math.random() * (GAME_WIDTH - 100 - this.width) + 50;
+            this.width = 40;
+            this.height = 70;
+            const roadLeft = canvas.width * 0.15;
+            const roadRight = canvas.width * 0.85 - this.width;
+            this.x = Math.random() * (roadRight - roadLeft) + roadLeft;
             this.y = -this.height;
-            this.speed = Math.random() * 2 + 2.5;
-            this.health = Math.random() > 0.7 ? 2 : 1; 
-            this.type = this.health > 1 ? 'armored' : 'standard';
+            this.baseSpeed = Math.random() * 2 + 2;
+            this.speed = this.baseSpeed;
+            const colors = ['#ff3333', '#ff9900', '#ffff00', '#e60067'];
+            this.color = colors[Math.floor(Math.random() * colors.length)];
         }
 
         update() {
-            this.y += this.speed;
+            // Move relative to scrolling environment
+            this.y += this.speed * speedModifier;
         }
 
         draw() {
-            ctx.fillStyle = '#111';
-            ctx.fillRect(this.x - 4, this.y + 10, 6, 14);
-            ctx.fillRect(this.x + this.width - 2, this.y + 10, 6, 14);
-
-            ctx.fillStyle = this.type === 'armored' ? '#555555' : '#00aa55';
-            ctx.beginPath();
-            ctx.roundRect(this.x, this.y, this.width, this.height, 6);
-            ctx.fill();
-
-            ctx.fillStyle = '#333';
-            ctx.fillRect(this.x + 8, this.y + 25, this.width - 16, 15);
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x, this.y + 10, this.width, this.height - 20);
+            ctx.fillStyle = '#222'; // Tinted windshield
+            ctx.fillRect(this.x + 8, this.y + 15, this.width - 16, 12);
+            // Wheels
+            ctx.fillStyle = '#000';
+            ctx.fillRect(this.x - 4, this.y + 12, 4, 14);
+            ctx.fillRect(this.x + this.width, this.y + 12, 4, 14);
+            ctx.fillRect(this.x - 4, this.y + 44, 4, 14);
+            ctx.fillRect(this.x + this.width, this.y + 44, 4, 14);
         }
     }
 
+    // Bullet Blueprint
     class Bullet {
         constructor(x, y) {
             this.x = x;
             this.y = y;
-            this.width = 6;
-            this.height = 16;
-            this.speed = 14;
+            this.width = 4;
+            this.height = 15;
+            this.speed = 12;
         }
-
         update() { this.y -= this.speed; }
         draw() {
-            ctx.fillStyle = '#ffd700';
+            ctx.fillStyle = '#ffff00';
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
     }
 
-    class Coin {
-        constructor(x, y) {
-            this.x = x;
-            this.y = y;
-            this.width = 20;  // Explicit dimensional box for perfect collisions
-            this.height = 20;
-            this.pulse = 0;
-        }
-
-        update() {
-            this.y += 3.5; 
-            this.pulse += 0.1;
-        }
-
-        draw() {
-            ctx.save();
-            ctx.shadowBlur = 8;
-            ctx.shadowColor = '#ffd700';
-            ctx.fillStyle = '#ffd700';
-            ctx.beginPath();
-            ctx.arc(this.x + 10, this.y + 10, 9 + Math.sin(this.pulse) * 1.5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
-        }
-    }
-
+    // Particle Blueprint for Explosions
     class Particle {
         constructor(x, y, color) {
             this.x = x;
             this.y = y;
             this.color = color;
+            this.radius = Math.random() * 3 + 1;
             this.vx = (Math.random() - 0.5) * 6;
             this.vy = (Math.random() - 0.5) * 6;
             this.alpha = 1;
@@ -421,23 +310,36 @@
         update() {
             this.x += this.vx;
             this.y += this.vy;
-            this.alpha -= 0.04;
+            this.alpha -= 0.03;
         }
         draw() {
             ctx.save();
             ctx.globalAlpha = this.alpha;
             ctx.fillStyle = this.color;
-            ctx.fillRect(this.x, this.y, 4, 4);
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fill();
             ctx.restore();
         }
     }
 
-    function createExplosion(x, y, color = '#ff5500') {
-        playSound('explosion');
-        screenShake = 8;
-        for (let i = 0; i < 10; i++) particles.push(new Particle(x, y, color));
+    // Gun firing trigger
+    function shootBullet() {
+        const now = Date.now();
+        if (now - lastShotTime > shotCooldown) {
+            bullets.push(new Bullet(player.x + player.width / 2 - 2, player.y));
+            lastShotTime = now;
+        }
     }
 
+    // Create explosions
+    function createExplosion(x, y, color) {
+        for (let i = 0; i < 15; i++) {
+            particles.push(new Particle(x, y, color));
+        }
+    }
+
+    // AABB Collision detection
     function checkCollision(rect1, rect2) {
         return rect1.x < rect2.x + rect2.width &&
                rect1.x + rect1.width > rect2.x &&
@@ -445,204 +347,161 @@
                rect1.y + rect1.height > rect2.y;
     }
 
-    function initGame() {
-        player = new Player();
-        enemies = [];
-        bullets = [];
-        coins = [];
-        particles = [];
-        score = 0;
-        cash = 0;
-        speedMPH = 70;
-        spawnTimer = 0;
-        ambientCoinTimer = 0;
-        gameTicks = 0;
+    // Draw scrolling background road environment
+    function drawEnvironment() {
+        // Track Scrolling speed
+        trackOffset += 5 * speedModifier;
+        if (trackOffset >= 40) trackOffset = 0;
+
+        // Background terrain (Grass shoulders)
+        ctx.fillStyle = '#1e5917';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Asphalt Track
+        const roadX = canvas.width * 0.15;
+        const roadWidth = canvas.width * 0.7;
+        ctx.fillStyle = '#3a3a3a';
+        ctx.fillRect(roadX, 0, roadWidth, canvas.height);
+
+        // Shoulders (Red/White curbs)
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(roadX - 8, 0, 8, canvas.height);
+        ctx.fillRect(roadX + roadWidth, 0, 8, canvas.height);
+
+        ctx.fillStyle = '#cc0000';
+        for (let y = -40 + trackOffset; y < canvas.height; y += 40) {
+            ctx.fillRect(roadX - 8, y, 8, 20);
+            ctx.fillRect(roadX + roadWidth, y, 8, 20);
+        }
+
+        // Center dash lines
+        ctx.fillStyle = '#ffffff';
+        for (let y = -60 + trackOffset; y < canvas.height; y += 60) {
+            ctx.fillRect(canvas.width / 2 - 2, y, 4, 30);
+        }
     }
 
+    // Spawning logic (Gradually gets harder)
+    let spawnTimer = 0;
+    function handleSpawning() {
+        spawnTimer++;
+        let spawnInterval = Math.max(30, 90 - Math.floor(score / 5)); 
+        if (spawnTimer >= spawnInterval) {
+            enemies.push(new Enemy());
+            spawnTimer = 0;
+        }
+    }
+
+    // Main Game Loop
     function update() {
-        if (gameState !== STATES.PLAYING) return;
+        if (!gameActive) return;
 
-        gameTicks++;
-        speedMPH = 70 + Math.floor(gameTicks / 150);
-
-        roadY += speedMPH * 0.12;
-        if (roadY >= 80) roadY = 0;
-
+        // 1. Calculations & Logic Updates
+        speedModifier = 1 + (score * 0.03); // Speed up track dynamically
         player.update();
 
-        // Projectiles
+        // Update bullets
         for (let i = bullets.length - 1; i >= 0; i--) {
             bullets[i].update();
             if (bullets[i].y < -20) bullets.splice(i, 1);
         }
 
-        // Enemy Generator
-        spawnTimer++;
-        if (spawnTimer > Math.max(40, 80 - Math.floor(gameTicks / 250))) {
-            enemies.push(new Enemy());
-            spawnTimer = 0;
-        }
-
-        // Ambient Coin Generator (Spawns a free coin on the asphalt every 2.5 seconds)
-        ambientCoinTimer++;
-        if (ambientCoinTimer > 150) { 
-            coins.push(new Coin(Math.random() * (GAME_WIDTH - 140) + 60, -30));
-            ambientCoinTimer = 0;
-        }
-
-        // Processing Enemies
+        // Update enemies
         for (let i = enemies.length - 1; i >= 0; i--) {
             enemies[i].update();
 
-            if (enemies[i].y > GAME_HEIGHT) {
+            // Off screen management
+            if (enemies[i].y > canvas.height + 50) {
                 enemies.splice(i, 1);
-                score += 10;
+                score++; // Survived a car pass
                 continue;
             }
 
-            // Player Crash
-            if (checkCollision(player, enemies[i])) {
-                createExplosion(enemies[i].x + enemies[i].width/2, enemies[i].y + enemies[i].height/2);
-                player.health -= enemies[i].type === 'armored' ? 34 : 20;
-                enemies.splice(i, 1);
-
-                if (player.health <= 0) {
-                    gameState = STATES.GAMEOVER;
-                    document.getElementById('final-score').innerText = `Score: ${score}`;
-                    document.getElementById('final-cash').innerText = `Earnings: £${cash}`;
-                    document.getElementById('gameover-screen').classList.remove('hidden');
-                }
-                continue;
-            }
-
-            // Bullet hits Enemy
+            // Bullet vs Enemy Collision
             for (let j = bullets.length - 1; j >= 0; j--) {
                 if (checkCollision(bullets[j], enemies[i])) {
+                    createExplosion(enemies[i].x + enemies[i].width/2, enemies[i].y + enemies[i].height/2, enemies[i].color);
+                    enemies.splice(i, 1);
                     bullets.splice(j, 1);
-                    enemies[i].health--;
-
-                    if (enemies[i].health <= 0) {
-                        createExplosion(enemies[i].x + enemies[i].width/2, enemies[i].y + enemies[i].height/2, '#ffd700');
-                        // Enemies drop a valuable coin on death
-                        coins.push(new Coin(enemies[i].x + enemies[i].width/2 - 10, enemies[i].y + enemies[i].height/2 - 10));
-                        enemies.splice(i, 1);
-                        score += 50;
-                        break;
-                    }
+                    score += 2; // Extra points for combat kills
+                    break;
                 }
             }
-        }
 
-        // Processing Coins
-        for (let i = coins.length - 1; i >= 0; i--) {
-            coins[i].update();
-            
-            // Generous collision box to make picking up coins effortless
-            const dynamicCoinBox = {
-                x: coins[i].x - 6,
-                y: coins[i].y - 6,
-                width: coins[i].width + 12,
-                height: coins[i].height + 12
-            };
-
-            if (checkCollision(player, dynamicCoinBox)) {
-                playSound('coin');
-                cash += 5; 
-                coins.splice(i, 1);
-                continue;
+            // Player vs Enemy Collision (Game Over execution)
+            if (enemies[i] && checkCollision(player, enemies[i])) {
+                createExplosion(player.x + player.width/2, player.y + player.height/2, '#00ffcc');
+                endGame();
             }
-
-            if (coins[i].y > GAME_HEIGHT + 20) coins.splice(i, 1);
         }
 
-        // Particles
+        // Update VFX Explosion particles
         for (let i = particles.length - 1; i >= 0; i--) {
             particles[i].update();
             if (particles[i].alpha <= 0) particles.splice(i, 1);
         }
 
-        if (screenShake > 0) screenShake *= 0.85;
-    }
+        handleSpawning();
 
-    function draw() {
-        ctx.save();
-        if (screenShake > 0.5) {
-            ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
-        }
+        // 2. Rendering operations
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawEnvironment();
 
-        ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
-        // Track Graphic Layer
-        ctx.fillStyle = '#3a3a3a';
-        ctx.fillRect(45, 0, GAME_WIDTH - 90, GAME_HEIGHT);
-
-        ctx.fillStyle = '#228B22'; 
-        ctx.fillRect(0, 0, 45, GAME_HEIGHT);
-        ctx.fillRect(GAME_WIDTH - 45, 0, 45, GAME_HEIGHT);
-
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(42, 0, 3, GAME_HEIGHT);
-        ctx.fillRect(GAME_WIDTH - 45, 0, 3, GAME_HEIGHT);
-
-        ctx.fillStyle = '#ffffff';
-        for (let y = roadY - 80; y < GAME_HEIGHT; y += 80) {
-            ctx.fillRect(GAME_WIDTH / 3, y, 4, 40);
-            ctx.fillRect((GAME_WIDTH / 3) * 2, y, 4, 40);
-        }
-
-        coins.forEach(coin => coin.draw());
-        enemies.forEach(enemy => enemy.draw());
-        bullets.forEach(bullet => bullet.draw());
-        if (gameState === STATES.PLAYING) player.draw();
+        bullets.forEach(b => b.draw());
+        enemies.forEach(e => e.draw());
+        player.draw();
         particles.forEach(p => p.draw());
 
-        ctx.restore();
+        // UI Scoreboard
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.fillText(`SCORE: ${score}`, 25, 35);
 
-        // Overlay Text HUD Display
-        if (gameState === STATES.PLAYING) {
-            ctx.fillStyle = 'rgba(0,0,0,0.5)';
-            ctx.fillRect(0, 0, GAME_WIDTH, 50);
-
-            ctx.fillStyle = '#fff';
-            ctx.font = 'bold 15px sans-serif';
-            ctx.fillText(`Score: ${score}`, 15, 31);
-            
-            ctx.fillStyle = '#ffd700';
-            ctx.font = 'bold 16px sans-serif';
-            ctx.fillText(`£${cash}`, GAME_WIDTH - 85, 31);
-
-            ctx.fillStyle = '#ccc';
-            ctx.font = '11px sans-serif';
-            ctx.fillText(`${speedMPH} mph`, GAME_WIDTH / 2 - 22, 42);
-
-            ctx.fillStyle = '#444';
-            ctx.fillRect(GAME_WIDTH / 2 - 50, 14, 100, 10);
-            ctx.fillStyle = player.health > 30 ? '#00ff66' : '#ff3333';
-            ctx.fillRect(GAME_WIDTH / 2 - 50, 14, player.health, 10);
-        }
+        requestAnimationFrame(update);
     }
 
-    function loop() {
-        update();
-        draw();
-        requestAnimationFrame(loop);
+    // Engine Flow Controls
+    function startGame() {
+        // Reset properties
+        score = 0;
+        enemies = [];
+        bullets = [];
+        particles = [];
+        player = new Player();
+        
+        startScreen.classList.add('hide');
+        gameOverScreen.classList.add('hide');
+        gameActive = true;
+        
+        requestAnimationFrame(update);
     }
 
-    // UI View Switches
-    document.getElementById('start-btn').addEventListener('click', () => {
-        initAudio();
-        initGame();
-        gameState = STATES.PLAYING;
-        document.getElementById('start-screen').classList.add('hidden');
+    function endGame() {
+        gameActive = false;
+        finalScoreText.innerText = `Score: ${score}`;
+        gameOverScreen.classList.remove('hide');
+    }
+
+    // Desktop Input Listeners
+    window.addEventListener('keydown', (e) => {
+        if (e.code in keys) keys[e.code] = true;
+    });
+    window.addEventListener('keyup', (e) => {
+        if (e.code in keys) keys[e.code] = false;
     });
 
-    document.getElementById('restart-btn').addEventListener('click', () => {
-        initGame();
-        gameState = STATES.PLAYING;
-        document.getElementById('gameover-screen').classList.add('hidden');
-    });
+    // Mobile Input Handlers (Steering Zones & Weapon Buttons)
+    document.getElementById('leftZone').addEventListener('touchstart', (e) => { e.preventDefault(); touchLeft = true; });
+    document.getElementById('leftZone').addEventListener('touchend', () => touchLeft = false);
+    
+    document.getElementById('rightZone').addEventListener('touchstart', (e) => { e.preventDefault(); touchRight = true; });
+    document.getElementById('rightZone').addEventListener('touchend', () => touchRight = false);
 
-    loop();
+    fireBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if(gameActive) shootBullet();
+    });
 </script>
+
 </body>
 </html>
