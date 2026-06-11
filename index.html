@@ -157,7 +157,7 @@
     <div id="gameover-screen" class="screen hidden">
         <h1>Wrecked</h1>
         <p id="final-score">Score: 0</p>
-        <p id="final-cash">Earnings: £0</p>
+        <p id="final-cash">Earnings: 0</p>
         <button class="btn" id="restart-btn">Drive Again</button>
     </div>
 
@@ -609,7 +609,7 @@
             
             ctx.fillStyle = '#ffd700';
             ctx.font = 'bold 16px sans-serif';
-            ctx.fillText(`Coins ${cash}`, GAME_WIDTH - 85, 31);
+            ctx.fillText(`Coins: ${cash}`, GAME_WIDTH - 85, 31);
 
             ctx.fillStyle = '#ccc';
             ctx.font = '11px sans-serif';
